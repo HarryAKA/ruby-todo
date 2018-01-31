@@ -1,2 +1,3 @@
 # ruby-todo
-Command line ToDo List application built with Ruby.
+
+usage: ruby ToDo.rb
