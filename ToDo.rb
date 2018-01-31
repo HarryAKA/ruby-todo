@@ -7,10 +7,11 @@ Author : Harry Kran-Annexstein
 # Modules ::
 module Menu
   def menu
-    "Please choose an option:
-      1) Add new task
-      2) Show tasks
-      Q) Quit"
+    "\nPlease choose an option:
+    1) Add new task
+    2) Show tasks
+    3) Save list to .txt file
+    Q) Quit"
   end
 
   def show
@@ -18,7 +19,7 @@ module Menu
   end
 end
 
-module Prompts
+module Prompt
   def prompt(message = 'What would you like to do? ', symbol = ':> ')
     puts message
     print symbol
@@ -48,6 +49,12 @@ class List
   def printList
     @tasks.each {|task| puts task.show}
   end
+
+  def writeToFile(filename)
+    filename << ".txt" if !(filename.include? ".txt")
+    IO.write(filename, @tasks.map(&:show).join("\n"))
+    puts "#{filename} was saved."
+  end
 end
 
 # Task Class
@@ -69,16 +76,18 @@ end
 
 # Actions ::
 if __FILE__ == $PROGRAM_NAME
-  include Menu, Prompts
+  include Menu, Prompt
   puts "<< Ruby ToDo >>"
-  my_list = List.new
+  list = List.new
   until ((user_input = prompt(show).downcase) == 'q')
     case user_input
       when '1'
-        my_list.add(Task.new(prompt('What task would you like to add?')))
+        list.add(Task.new(prompt("\nWhat task would you like to add?")))
       when '2'
-        puts (my_list.show == []) ? "There are no tasks. Add one!" : 'Here are your tasks:'
-        my_list.printList
+        puts (list.show == []) ? "\nThere are no tasks. Add one!" : "\nHere are your tasks:"
+        list.printList
+      when '3'
+        list.writeToFile(prompt("\nWhat should the filename be?"))
       else
         puts 'Invalid input. Please enter 1, 2, or Q'
     end
