@@ -11,6 +11,7 @@ module Menu
     1) Add new task
     2) Show tasks
     3) Save list to .txt file
+    4) Import list from a file
     Q) Quit"
   end
 
@@ -51,18 +52,28 @@ class List
   end
 
   def writeToFile(filename)
-    filename << ".txt" if !(filename.include? ".txt")
+    # append .txt to filename if user does not specify file extension
+    filename << ".txt" if !(filename.include? ".")
     IO.write(filename, @tasks.map(&:show).join("\n"))
-    puts "#{filename} was saved."
+    puts "ToDo list saved to file: #{filename}"
+  end
+
+  def readFromFile(filename)
+    IO.readlines(filename).each do |line|
+      task = line.split(' ')
+      # if task line begins with '+' import task as completed
+      task[0] == '+' ? add(Task.new(task[1], true)) : add(Task.new(task[1]))
+    end
   end
 end
 
 # Task Class
 class Task
-  attr_reader :title
-  def initialize(title)
+  attr_accessor :title
+  attr_accessor :completed
+  def initialize(title, completed = false)
     @title = title
-    @completed = false
+    @completed = completed
   end
 
   def to_s
@@ -84,10 +95,20 @@ if __FILE__ == $PROGRAM_NAME
       when '1'
         list.add(Task.new(prompt("\nWhat task would you like to add?")))
       when '2'
-        puts (list.show == []) ? "\nThere are no tasks. Add one!" : "\nHere are your tasks:"
+        puts (list.show == []) ? "\nThere are no tasks to show. Add one!" : "\nHere are your tasks:"
         list.printList
       when '3'
-        list.writeToFile(prompt("\nWhat should the filename be?"))
+        if list.show == []
+          puts "\nToDo list is empty! Please add at least one task before saving."
+        else
+          list.writeToFile(prompt("\nWhat should the filename be?"))
+        end
+      when '4'
+        begin
+          list.readFromFile(prompt("\nWhat file would you like to import?"))
+        rescue Errno::ENOENT
+          puts 'Error: File not found. Please verify the file name and path then try again.'
+        end
       else
         puts 'Invalid input. Please enter 1, 2, or Q'
     end
