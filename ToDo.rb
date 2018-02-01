@@ -9,9 +9,10 @@ module Menu
   def menu
     "\nPlease choose an option:
     1) Add new task
-    2) Show tasks
-    3) Save list to .txt file
-    4) Import list from a file
+    2) Delete a task
+    3) Show tasks
+    4) Save list to .txt file
+    5) Import list from a file
     Q) Quit"
   end
 
@@ -43,12 +44,17 @@ class List
     puts "New task added: '#{task.title}'"
   end
 
+  def delete(task_number)
+    puts "Deleting task: '#{tasks[task_number].title}'"
+    tasks.delete_at(task_number)
+  end
+
   def show
     tasks
   end
 
   def printList
-    @tasks.each {|task| puts task.show}
+    @tasks.each_with_index {|task, index| print task.show; puts " [#{index}]"}
   end
 
   def writeToFile(filename)
@@ -61,8 +67,8 @@ class List
   def readFromFile(filename)
     IO.readlines(filename).each do |line|
       task = line.split(' ')
-      # if task line begins with '+' import task as completed
-      task[0] == '+' ? add(Task.new(task[1], true)) : add(Task.new(task[1]))
+      # if task line begins with '☑︎' import task as completed
+      task[0] == '☑︎' ? add(Task.new(task[1], true)) : add(Task.new(task[1]))
     end
   end
 end
@@ -81,7 +87,7 @@ class Task
   end
 
   def show
-    @completed ? "+ #{title}" : "- #{title}"
+    @completed ? "☑︎ #{title}" : "☐ #{title}"
   end
 end
 
@@ -95,15 +101,27 @@ if __FILE__ == $PROGRAM_NAME
       when '1'
         list.add(Task.new(prompt("\nWhat task would you like to add?")))
       when '2'
+        if list.show == []
+          puts "\nToDo list is empty! There's nothing to delete."
+        else
+          puts "\nWhat task would you like to delete?"
+          list.printList
+          begin
+            list.delete(prompt("Please provide the corresponding task number.").to_i)
+          rescue Errno::ENOENT
+            puts 'Error: Invalid task number.'
+          end
+        end
+      when '3'
         puts (list.show == []) ? "\nThere are no tasks to show. Add one!" : "\nHere are your tasks:"
         list.printList
-      when '3'
+      when '4'
         if list.show == []
           puts "\nToDo list is empty! Please add at least one task before saving."
         else
           list.writeToFile(prompt("\nWhat should the filename be?"))
         end
-      when '4'
+      when '5'
         begin
           list.readFromFile(prompt("\nWhat file would you like to import?"))
         rescue Errno::ENOENT
