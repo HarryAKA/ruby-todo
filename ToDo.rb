@@ -10,9 +10,10 @@ module Menu
     "\nPlease choose an option:
     1) Add new task
     2) Delete a task
-    3) Show tasks
-    4) Save list to .txt file
-    5) Import list from a file
+    3) Toggle task status
+    4) Show tasks
+    5) Save list to .txt file
+    6) Import list from a file
     Q) Quit"
   end
 
@@ -47,6 +48,10 @@ class List
   def delete(task_number)
     puts "Deleting task: '#{tasks[task_number].title}'"
     tasks.delete_at(task_number)
+  end
+
+  def toggle(task_number)
+    tasks[task_number].completed = !(tasks[task_number].completed)
   end
 
   def show
@@ -104,24 +109,37 @@ if __FILE__ == $PROGRAM_NAME
         if list.show == []
           puts "\nToDo list is empty! There's nothing to delete."
         else
-          puts "\nWhat task would you like to delete?"
+          puts "\nWhich task would you like to delete?"
           list.printList
           begin
             list.delete(prompt("Please provide the corresponding task number.").to_i)
-          rescue Errno::ENOENT
+          rescue NoMethodError
             puts 'Error: Invalid task number.'
           end
         end
       when '3'
+        if list.show == []
+          puts "\nToDo list is empty! There's no task to toggle."
+        else
+          puts "\nWhich task would you like to toggle?"
+          list.printList
+          begin
+            list.toggle(prompt("Please provide the corresponding task number.").to_i)
+            list.printList
+          rescue NoMethodError
+            puts 'Error: Invalid task number.'
+          end
+        end
+      when '4'
         puts (list.show == []) ? "\nThere are no tasks to show. Add one!" : "\nHere are your tasks:"
         list.printList
-      when '4'
+      when '5'
         if list.show == []
           puts "\nToDo list is empty! Please add at least one task before saving."
         else
           list.writeToFile(prompt("\nWhat should the filename be?"))
         end
-      when '5'
+      when '6'
         begin
           list.readFromFile(prompt("\nWhat file would you like to import?"))
         rescue Errno::ENOENT
