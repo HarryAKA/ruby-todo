@@ -11,9 +11,10 @@ module Menu
     1) Add new task
     2) Delete a task
     3) Toggle task status
-    4) Show tasks
-    5) Save list to .txt file
-    6) Import list from a file
+    4) Update task description
+    5) Show tasks
+    6) Save list to .txt file
+    7) Import list from a file
     Q) Quit"
   end
 
@@ -52,6 +53,10 @@ class List
 
   def toggle(task_number)
     tasks[task_number].completed = !(tasks[task_number].completed)
+  end
+
+  def update(task_number, new_title)
+    tasks[task_number].title = new_title
   end
 
   def show
@@ -131,15 +136,29 @@ if __FILE__ == $PROGRAM_NAME
           end
         end
       when '4'
+        if list.show == []
+          puts "\nToDo list is empty! There's no task to update."
+        else
+          puts "\nWhich task would you like to update?"
+          list.printList
+          begin
+            task_number = prompt("Please provide the corresponding task number.").to_i
+            list.update(task_number, prompt("Please provide the updated task description."))
+            list.printList
+          rescue NoMethodError
+            puts 'Error: Invalid task number.'
+          end
+        end
+      when '5'
         puts (list.show == []) ? "\nThere are no tasks to show. Add one!" : "\nHere are your tasks:"
         list.printList
-      when '5'
+      when '6'
         if list.show == []
           puts "\nToDo list is empty! Please add at least one task before saving."
         else
           list.writeToFile(prompt("\nWhat should the filename be?"))
         end
-      when '6'
+      when '7'
         begin
           list.readFromFile(prompt("\nWhat file would you like to import?"))
         rescue Errno::ENOENT
